@@ -25,16 +25,22 @@ insheet using "`path'\school_data_for_EIC_Share IPA.csv"
   keep if teachers >= 4						  /* already applied, but just in case */
 
 * Form clusters within each district
-	/* Code foreach-loop is unfinished 
-	  encode iddistrict, gen(distid)
-	  foreach dist of local [fill in] {
-		cluster kmeans geopointlatitude geopointlongitude if distid == `dist', k(`numclust')
-	  }
-	*/ 
 
-	* Manual process
-	cluster kmeans geopointlatitude geopointlongitude if upper(iddistrict)=="BOMBALI", k(10) gen(clustid2) start(segments)
-	graph twoway scatter geopointlatitude geopointlongitude if iddistrict=="BOMBALI", mlabel(clustid2)
+  * Manual process (TO DO: turn this into a program that can be passed parameters)
+	local district "BOMBALI"
+	local numcluster = 10
+	local clustersize = 10
+	local assignclusters = 2
+	local t1 "Educaid"
+	local n0 = 10
+	local n1 = 10
+	
+	capture drop clustid_`district'
+	cluster kmeans geopointlatitude geopointlongitude if upper(iddistrict)==`district', k(`numclusters') gen(clustid_`district') start(segments)
+	tab clustid_`district' if iddistrict==`district'
+	graph twoway scatter geopointlatitude geopointlongitude if iddistrict==`district', mlabel(clustid_`district')
+ 
+	**** TO DO: figure out how to group adjacent clusters that are too small on their own (smaller than clustersize)
  
 * Assign clusters to treatment status witin stratum (district)  
    sort 
